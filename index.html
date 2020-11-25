@@ -11,19 +11,19 @@
     <div>
         <span> ENVÍAS</span>
         <span>
-            <input type="radio" name="inputs" checked="checked">
+            <input type="radio" name="inputs" checked="checked" id="radioFrom" onChange="enableSelected()" value="send" >
         </span>
-        <input type="text">
+        <input type="text" id="currencyClp" onChange="getQuote()">
         <span>CLP</span>
     </div>
     <div>
         <span> RECIBES</span>
         <span>
-            <input type="radio" name="inputs">
+            <input type="radio" name="inputs" id="radioTo"  onChange="enableSelected()" value="receive">
         </span>
-        <input type="text" disabled>
+        <input type="text" id="currencyTo" onChange="getQuote()" disabled>
         <span>
-            <select name="currencyTo" id="currencyTo">
+            <select name="currencySelect" id="currencySelect">
                 <option value="peru">Perú</option>
                 <option value="colombia">Colombia</option>
                 <option value="brasil">Brasil</option>
@@ -35,7 +35,66 @@
 
 <script>
 
+let data = {
+    "peru":{currency:"PEN",USDvalue:0.28,spread:0.015,margin:0.03},
+    "colombia":{currency:"COP",USDvalue:0.00027,spread:0.018,margin:0.035},
+    "brasil":{currency:"BRL",USDvalue:0.19,spread:0.012,margin:0.029}
+}
+let clpValue =757;
+let spreadClp = 0.004;
+
+function enableSelected(){
+    let radioSelection = document.querySelector('input[name="inputs"]:checked').value;
+    if (radioSelection == "send"){
+        document.getElementById("currencyClp").removeAttribute('disabled');
+        document.getElementById("currencyTo").setAttribute('disabled',true);
+    }
+    else{
+        document.getElementById("currencyClp").setAttribute('disabled',true);
+        document.getElementById("currencyTo").removeAttribute('disabled');
+    }
+
+    document.getElementById("currencyClp").value = null;
+    document.getElementById("currencyTo").value = null;
+}
+
+
+
+
+function getQuote(){
+    let currencyData = data[document.getElementById("currencySelect").value]
+    let insertedValue = 0;
+    let quotedValue = 0;
     
+    if (document.querySelector('input[name="inputs"]:checked').value == "receive"){
+        insertedValue = document.getElementById("currencyTo").value
+        quotedValue = insertedValue*currencyData.USDvalue;
+        quotedValue += quotedValue*currencyData.spread;
+        quotedValue = quotedValue*clpValue;
+        quotedValue += quotedValue*spreadClp;
+        quotedValue += quotedValue*currencyData.margin;
+        quotedValue = Math.round(quotedValue);
+        document.getElementById("currencyClp").value = quotedValue
+
+
+    } 
+    else{
+        insertedValue = document.getElementById("currencyClp").value;
+        
+        quotedValue = insertedValue/(1+currencyData.margin);
+        quotedValue = quotedValue/(1+spreadClp);
+        quotedValue = quotedValue/clpValue;
+        quotedValue = quotedValue/(1+currencyData.spread);
+        quotedValue = quotedValue/currencyData.USDvalue;
+        quotedValue = Math.round(quotedValue);
+        document.getElementById("currencyTo").value = quotedValue
+    }
+    
+
+    
+    
+}
+
 </script>
 
 
